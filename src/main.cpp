@@ -15,7 +15,7 @@ int16_t filter_taps[FILTER_TAP_NUM] =
 
 
 int16_t input[AUDIO_BLOCK_SAMPLES] __attribute__ ( ( aligned ( 4 ) ) );
-int16_t output[AUDIO_BLOCK_SAMPLES/4] __attribute__ ( ( aligned ( 4 ) ) );
+int16_t output[AUDIO_BLOCK_SAMPLES] __attribute__ ( ( aligned ( 4 ) ) );
 
 void setup() {
   // init success variable to false
@@ -41,7 +41,7 @@ void setup() {
   arm_fir_decimate_init_q15(&fir_inst, FILTER_TAP_NUM, Mdec,filter_taps,
                 &StateQ15[0], AUDIO_BLOCK_SAMPLES);
 
-  // create signal with 256 numbers
+  // create signal
   for (int id=0; id < AUDIO_BLOCK_SAMPLES; id++){
     input[id] = id;
   }
@@ -57,9 +57,18 @@ void setup() {
   arm_fir_decimate_fast_q15(&fir_inst, (q15_t *)input,
     (q15_t *)output, AUDIO_BLOCK_SAMPLES);
 
+  // create signal
+  for (int id=0; id < AUDIO_BLOCK_SAMPLES; id++){
+    input[id] = id+AUDIO_BLOCK_SAMPLES;
+  }
+
+  // calculate output signal
+  arm_fir_decimate_fast_q15(&fir_inst, (q15_t *)input,
+    (q15_t *)(output+AUDIO_BLOCK_SAMPLES/4), AUDIO_BLOCK_SAMPLES);
+
   // print output
   Serial.println("Output:");
-  for (int id=0; id < AUDIO_BLOCK_SAMPLES/4; id++){
+  for (int id=0; id < 2*AUDIO_BLOCK_SAMPLES/4; id++){
     Serial.println(output[id]);
   }
 
